@@ -1,38 +1,29 @@
 ```
-# Python
+# Build artifacts
+*.spec
+dist/
+build/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Build artifacts
-build/
-dist/
-
-# PyInstaller
-*.spec
-*.pkg
-warn-*.txt
-xref-*.html
-
 # Dependencies
-*.whl
-*.egg-info/
-
-# Logs and temp files
-*.log
-*.tmp
-
-# Environment
+.venv/
+venv/
+env/
 .env
 .env.local
-*.env.*
+.env.*
 
 # Editors
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# Logs
+*.log
 
 # OS
 .DS_Store
@@ -43,7 +34,9 @@ Thumbs.db
 coverage/
 htmlcov/
 
-# Testing
+# Pytest
 .pytest_cache/
+
+# MyPy
 .mypy_cache/
 ```

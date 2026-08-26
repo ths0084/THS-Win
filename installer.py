@@ -13,8 +13,16 @@ try:
 except ImportError:
     print("Erro: A biblioteca 'customtkinter' não está instalada.")
     print("Execute: pip install customtkinter")
-    input("Pressione Enter para sair...")
     sys.exit(1)
+
+# Verificar se está rodando no Windows
+import platform
+IS_WINDOWS = platform.system() == "Windows"
+
+if not IS_WINDOWS:
+    print("AVISO: Este aplicativo foi desenvolvido para Windows 10/11.")
+    print("Algumas funcionalidades podem não funcionar corretamente neste sistema.")
+    print("A interface gráfica será aberta, mas as instalações via Winget só funcionarão no Windows.")
 
 # Configurações da Interface
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -108,8 +116,8 @@ SOFTWARE_LIST = [
 
     # Específicos Brasil / Gov (Podem não estar no Winget, requerem tratamento especial)
     # Se não estiverem no winget, o script avisará que precisa de instalação manual ou URL
-    {"name": "PJE (Instalador Manual)", "id": null, "category": "free", "note": "Baixar do site do TST manualmente"},
-    {"name": "Assinador Livre", "id": null, "category": "free", "note": "Baixar do site oficial manualmente"},
+    {"name": "PJE (Instalador Manual)", "id": None, "category": "free", "note": "Baixar do site do TST manualmente"},
+    {"name": "Assinador Livre", "id": None, "category": "free", "note": "Baixar do site oficial manualmente"},
 ]
 
 class AutoElevate:
