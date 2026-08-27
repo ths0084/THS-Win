@@ -116,8 +116,8 @@ SOFTWARE_LIST = [
 
     # Específicos Brasil / Gov (Podem não estar no Winget, requerem tratamento especial)
     # Se não estiverem no winget, o script avisará que precisa de instalação manual ou URL
-    {"name": "PJE (Instalador Manual)", "id": None, "category": "free", "note": "Baixar do site do TST manualmente"},
-    {"name": "Assinador Livre", "id": None, "category": "free", "note": "Baixar do site oficial manualmente"},
+    {"name": "PJE", "id": None, "category": "free", "url": "https://pje-office.pje.jus.br/pro/pjeoffice-pro-v2.5.16u-windows_x64.exe", "note": "Instalador via URL oficial"},
+    {"name": "Assinador Livre", "id": None, "category": "free", "url": "http://www.tjrj.jus.br/documents/10136/33009/AssinadorLivre.exe", "note": "Instalador via URL oficial"},
 ]
 
 class AutoElevate:
@@ -261,7 +261,13 @@ class InstallerApp(ctk.CTk):
     def install_app(self, app_data):
         name = app_data['name']
         app_id = app_data.get('id')
+        app_url = app_data.get('url')
         note = app_data.get('note', '')
+
+        # Caso especial: Software com URL direta para download
+        if not app_id and app_url:
+            self.log(f"[INSTALANDO] {name} via download direto...")
+            return self.install_from_url(name, app_url)
 
         if not app_id:
             self.log(f"[SKIP] {name}: Instalação automática não disponível. {note}")
@@ -293,6 +299,46 @@ class InstallerApp(ctk.CTk):
 
         except Exception as e:
             self.log(f"[ERRO] Falha ao instalar {name}. Detalhes: {str(e)}")
+            return "failed"
+
+    def install_from_url(self, name, url):
+        """Instala software baixando diretamente da URL"""
+        import tempfile
+        import urllib.request
+        
+        try:
+            # Criar arquivo temporário para o instalador
+            temp_dir = tempfile.gettempdir()
+            installer_path = os.path.join(temp_dir, f"{name.replace(' ', '_')}_installer.exe")
+            
+            self.log(f"[DOWNLOAD] Baixando {name} de {url}...")
+            
+            # Download do instalador
+            urllib.request.urlretrieve(url, installer_path)
+            
+            self.log(f"[INSTALANDO] Executando instalador de {name}...")
+            
+            # Executar instalador em modo silencioso (tentativa genérica)
+            # Cada software pode ter flags diferentes (/S, /quiet, /verysilent, etc.)
+            process = subprocess.Popen([installer_path, "/S"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
+            
+            # Limpar arquivo temporário
+            try:
+                os.remove(installer_path)
+            except:
+                pass
+            
+            if process.returncode == 0:
+                self.log(f"[SUCESSO] {name} instalado com sucesso.")
+                return "success"
+            else:
+                # Alguns instaladores podem exigir flags diferentes
+                self.log(f"[AVISO] {name} pode exigir intervenção manual. Tente executar o instalador novamente se necessário.")
+                return "partial"
+                
+        except Exception as e:
+            self.log(f"[ERRO] Falha ao instalar {name} via URL. Detalhes: {str(e)}")
             return "failed"
 
     def start_installation(self):

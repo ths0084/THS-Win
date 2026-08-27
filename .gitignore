@@ -1,29 +1,35 @@
 ```
-# Build artifacts
-*.spec
-dist/
-build/
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Dependencies
-.venv/
-venv/
-env/
+# Build artifacts
+build/
+dist/
+
+# PyInstaller
+*.spec
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Environment
 .env
 .env.local
-.env.*
+*.env.*
 
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# Logs
-*.log
+*.sublime-project
+*.sublime-workspace
 
 # OS
 .DS_Store
@@ -34,9 +40,7 @@ Thumbs.db
 coverage/
 htmlcov/
 
-# Pytest
+# Testing
 .pytest_cache/
-
-# MyPy
 .mypy_cache/
 ```
