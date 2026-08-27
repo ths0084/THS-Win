@@ -150,9 +150,9 @@ class InstallerApp(ctk.CTk):
         super().__init__()
 
         # Configuração da Janela
-        self.title("Instalador Automático de Softwares")
-        self.geometry("1000x700")
-        self.minsize(800, 600)
+        self.title("Instalador e Mantenedor de Softwares")
+        self.geometry("1100x750")
+        self.minsize(900, 650)
         
         # Variáveis de Estado
         self.checkboxes = {}
@@ -160,12 +160,26 @@ class InstallerApp(ctk.CTk):
         self.install_thread = None
         self.stop_flag = False
 
-        # Layout Principal
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        # Criar sistema de abas
+        self.tabview = ctk.CTkTabview(self)
+        self.tabview.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Adicionar abas
+        self.tab_instalacao = self.tabview.add("📦 Instalação de Softwares")
+        self.tab_manutencao = self.tabview.add("🛠️ Manutenção do Sistema")
+
+        # Setup das interfaces
+        self.setup_instalacao_tab()
+        self.setup_manutencao_tab()
+
+    def setup_instalacao_tab(self):
+        """Configura a aba de instalação de softwares"""
+        # Layout Principal da Aba Instalação
+        self.tab_instalacao.grid_columnconfigure(1, weight=1)
+        self.tab_instalacao.grid_rowconfigure(0, weight=1)
 
         # Sidebar (Menu Lateral)
-        self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
+        self.sidebar_frame = ctk.CTkFrame(self.tab_instalacao, width=200, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
 
@@ -182,7 +196,7 @@ class InstallerApp(ctk.CTk):
         self.btn_start.grid(row=3, column=0, padx=20, pady=20)
 
         # Área de Conteúdo (Scrollable)
-        self.scrollable_frame = ctk.CTkScrollableFrame(self, label_text="Selecione os Softwares")
+        self.scrollable_frame = ctk.CTkScrollableFrame(self.tab_instalacao, label_text="Selecione os Softwares")
         self.scrollable_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         self.scrollable_frame.grid_columnconfigure((0, 1), weight=1)
 
@@ -190,7 +204,7 @@ class InstallerApp(ctk.CTk):
         self.render_checkboxes()
 
         # Área de Log (Inferior)
-        self.log_frame = ctk.CTkFrame(self, height=150, corner_radius=10)
+        self.log_frame = ctk.CTkFrame(self.tab_instalacao, height=150, corner_radius=10)
         self.log_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=20, pady=(0, 20))
         self.log_frame.grid_propagate(False)
         
@@ -200,6 +214,247 @@ class InstallerApp(ctk.CTk):
         self.log_text = scrolledtext.ScrolledText(self.log_frame, height=6, bg="#2b2b2b", fg="white", font=("Consolas", 9))
         self.log_text.pack(fill="both", expand=True, padx=10, pady=5)
         self.log_text.config(state='disabled')
+
+    def setup_manutencao_tab(self):
+        """Configura a aba de manutenção do sistema"""
+        # Frame principal da aba manutenção
+        main_frame = ctk.CTkScrollableFrame(self.tab_manutencao, label_text="Ferramentas de Manutenção do Windows")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.grid_columnconfigure((0, 1, 2), weight=1)
+
+        # Título explicativo
+        info_label = ctk.CTkLabel(
+            main_frame, 
+            text="Selecione uma ferramenta para executar. Algumas operações podem levar vários minutos.",
+            font=ctk.CTkFont(size=12),
+            text_color="gray"
+        )
+        info_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
+
+        # Botões de Manutenção organizados em grid
+        tools = [
+            {
+                "name": "🧹 Limpeza de Disco",
+                "desc": "Remove arquivos temporários, cache e lixeira",
+                "cmd": self.run_disk_cleanup,
+                "row": 1, "col": 0
+            },
+            {
+                "name": "🔧 Reparar Sistema (SFC)",
+                "desc": "Verifica e corrige arquivos do sistema corrompidos",
+                "cmd": self.run_sfc_scan,
+                "row": 1, "col": 1
+            },
+            {
+                "name": "🏥 DISM RestoreHealth",
+                "desc": "Repara imagem do Windows via Windows Update",
+                "cmd": self.run_dism_restore,
+                "row": 1, "col": 2
+            },
+            {
+                "name": "⚡ Otimizar Drives",
+                "desc": "Desfragmenta HDs ou executa TRIM em SSDs",
+                "cmd": self.run_drive_optimize,
+                "row": 2, "col": 0
+            },
+            {
+                "name": "🛡️ Verificação Defender",
+                "desc": "Executa varredura rápida de vírus e malware",
+                "cmd": self.run_defender_scan,
+                "row": 2, "col": 1
+            },
+            {
+                "name": "🚀 Gerenciar Inicialização",
+                "desc": "Abre gerenciador de programas na inicialização",
+                "cmd": self.run_startup_manager,
+                "row": 2, "col": 2
+            },
+            {
+                "name": "🔄 Windows Update",
+                "desc": "Verifica e instala atualizações do sistema",
+                "cmd": self.run_windows_update,
+                "row": 3, "col": 0
+            },
+            {
+                "name": "🌐 Reset de Rede",
+                "desc": "Libera DNS e reseta configurações de rede",
+                "cmd": self.run_network_reset,
+                "row": 3, "col": 1
+            },
+            {
+                "name": "📊 Informações do Sistema",
+                "desc": "Exibe detalhes sobre hardware e software",
+                "cmd": self.run_system_info,
+                "row": 3, "col": 2
+            }
+        ]
+
+        self.maintenance_buttons = {}
+        for tool in tools:
+            frame = ctk.CTkFrame(main_frame, corner_radius=10, fg_color="#2b2b2b")
+            frame.grid(row=tool["row"], column=tool["col"], padx=10, pady=10, sticky="nsew")
+            frame.grid_columnconfigure(0, weight=1)
+
+            name_label = ctk.CTkLabel(frame, text=tool["name"], font=ctk.CTkFont(size=14, weight="bold"))
+            name_label.grid(row=0, column=0, padx=15, pady=(15, 5), sticky="w")
+
+            desc_label = ctk.CTkLabel(frame, text=tool["desc"], font=ctk.CTkFont(size=10), text_color="gray", wraplength=250, justify="left")
+            desc_label.grid(row=1, column=0, padx=15, pady=(0, 15), sticky="w")
+
+            btn = ctk.CTkButton(frame, text="Executar", height=35, command=tool["cmd"])
+            btn.grid(row=2, column=0, padx=15, pady=(0, 15), sticky="ew")
+
+            self.maintenance_buttons[tool["name"]] = btn
+
+        # Área de Log da Manutenção
+        self.maintenance_log_frame = ctk.CTkFrame(self.tab_manutencao, height=120, corner_radius=10)
+        self.maintenance_log_frame.pack(fill="x", padx=20, pady=(0, 20))
+        
+        self.maintenance_log_label = ctk.CTkLabel(self.maintenance_log_frame, text="Log de Manutenção:", anchor="w")
+        self.maintenance_log_label.pack(fill="x", padx=10, pady=5)
+        
+        self.maintenance_log_text = scrolledtext.ScrolledText(self.maintenance_log_frame, height=4, bg="#2b2b2b", fg="white", font=("Consolas", 9))
+        self.maintenance_log_text.pack(fill="both", expand=True, padx=10, pady=5)
+        self.maintenance_log_text.config(state='disabled')
+
+    def log_manutencao(self, message):
+        """Adiciona mensagem ao log de manutenção"""
+        self.maintenance_log_text.config(state='normal')
+        self.maintenance_log_text.insert('end', message + "\n")
+        self.maintenance_log_text.see('end')
+        self.maintenance_log_text.config(state='disabled')
+
+    def run_disk_cleanup(self):
+        """Executa limpeza de disco"""
+        self.log_manutencao("[INICIANDO] Limpeza de Disco...")
+        try:
+            # Limpar pasta TEMP
+            temp_dir = os.environ.get('TEMP', '')
+            if temp_dir and os.path.exists(temp_dir):
+                self.log_manutencao(f"[INFO] Limpando pasta temporária: {temp_dir}")
+                subprocess.run(f'del /q /f "{temp_dir}\\*"', shell=True, capture_output=True)
+            
+            # Executar cleanmgr
+            self.log_manutencao("[INFO] Iniciando Assistente de Limpeza de Disco...")
+            subprocess.Popen(['cleanmgr', '/d', 'C'], shell=True)
+            self.log_manutencao("[SUCESSO] Limpeza de Disco iniciada. Siga as instruções na janela.")
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha na limpeza: {str(e)}")
+
+    def run_sfc_scan(self):
+        """Executa SFC /scannow"""
+        self.log_manutencao("[INICIANDO] Verificação SFC (System File Checker)...")
+        self.log_manutencao("[AVISO] Este processo pode levar 15-30 minutos. Não feche a janela.")
+        try:
+            process = subprocess.Popen(['sfc', '/scannow'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+            
+            # Ler output em tempo real
+            for line in process.stdout:
+                self.log_manutencao(line.strip())
+            
+            process.wait()
+            if process.returncode == 0:
+                self.log_manutencao("[SUCESSO] Verificação SFC concluída.")
+            else:
+                self.log_manutencao(f"[COMPLETO] SFC finalizou com código {process.returncode}. Verifique o log acima.")
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha no SFC: {str(e)}")
+
+    def run_dism_restore(self):
+        """Executa DISM RestoreHealth"""
+        self.log_manutencao("[INICIANDO] DISM RestoreHealth...")
+        self.log_manutencao("[AVISO] Este processo requer internet e pode levar 10-20 minutos.")
+        try:
+            process = subprocess.Popen(
+                ['DISM', '/Online', '/Cleanup-Image', '/RestoreHealth'],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True
+            )
+            
+            for line in process.stdout:
+                self.log_manutencao(line.strip())
+            
+            process.wait()
+            if process.returncode == 0:
+                self.log_manutencao("[SUCESSO] DISM concluído com sucesso.")
+            else:
+                self.log_manutencao(f"[COMPLETO] DISM finalizou com código {process.returncode}.")
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha no DISM: {str(e)}")
+
+    def run_drive_optimize(self):
+        """Executa otimização de drives"""
+        self.log_manutencao("[INICIANDO] Otimização de Drives...")
+        try:
+            self.log_manutencao("[INFO] Abrindo utilitário de Otimizar e Desfragmentar Unidades...")
+            subprocess.Popen(['dfrgui'], shell=True)
+            self.log_manutencao("[SUCESSO] Utilitário de otimização aberto.")
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha ao abrir otimizador: {str(e)}")
+
+    def run_defender_scan(self):
+        """Executa varredura rápida do Windows Defender"""
+        self.log_manutencao("[INICIANDO] Varredura Rápida do Windows Defender...")
+        try:
+            # PowerShell command para scan rápido
+            ps_command = 'Start-MpScan -ScanType QuickScan'
+            self.log_manutencao("[INFO] Iniciando varredura...")
+            subprocess.Popen(['powershell', '-Command', ps_command], shell=True)
+            self.log_manutencao("[SUCESSO] Varredura iniciada. Resultados aparecerão no Centro de Segurança.")
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha ao iniciar varredura: {str(e)}")
+
+    def run_startup_manager(self):
+        """Abre gerenciador de inicialização"""
+        self.log_manutencao("[INICIANDO] Gerenciador de Inicialização...")
+        try:
+            # Abre Task Manager na aba Startup
+            subprocess.Popen(['taskmgr', '/0', '/startup'], shell=True)
+            self.log_manutencao("[SUCESSO] Gerenciador de Tarefas (Aba Inicialização) aberto.")
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha ao abrir gerenciador: {str(e)}")
+
+    def run_windows_update(self):
+        """Abre Windows Update"""
+        self.log_manutencao("[INICIANDO] Windows Update...")
+        try:
+            # URI scheme para abrir diretamente a página de updates
+            subprocess.Popen(['start', 'ms-settings:windowsupdate'], shell=True)
+            self.log_manutencao("[SUCESSO] Página do Windows Update aberta.")
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha ao abrir Windows Update: {str(e)}")
+
+    def run_network_reset(self):
+        """Reseta configurações de rede"""
+        self.log_manutencao("[INICIANDO] Reset de Rede...")
+        try:
+            self.log_manutencao("[INFO] Liberando DNS...")
+            subprocess.run(['ipconfig', '/flushdns'], shell=True, capture_output=True, text=True)
+            self.log_manutencao("[INFO] Renovando IP...")
+            subprocess.run(['ipconfig', '/renew'], shell=True, capture_output=True, text=True)
+            self.log_manutencao("[SUCESSO] Configurações de rede resetadas.")
+            messagebox.showinfo("Reset de Rede", "Comandos de rede executados.\nDNS liberado e IP renovado.")
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha no reset de rede: {str(e)}")
+
+    def run_system_info(self):
+        """Exibe informações do sistema"""
+        self.log_manutencao("[INICIANDO] Coletando informações do sistema...")
+        try:
+            import platform
+            info = f"""
+=== INFORMAÇÕES DO SISTEMA ===
+Sistema: {platform.system()}
+Versão: {platform.version()}
+Release: {platform.release()}
+Arquitetura: {platform.machine()}
+Processador: {platform.processor()}
+Nó: {platform.node()}
+==============================
+            """
+            self.log_manutencao(info)
+            messagebox.showinfo("Informações do Sistema", info.strip())
+        except Exception as e:
+            self.log_manutencao(f"[ERRO] Falha ao coletar informações: {str(e)}")
 
     def render_checkboxes(self):
         row = 0
